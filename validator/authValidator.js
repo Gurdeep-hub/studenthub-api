@@ -9,4 +9,10 @@ const registerSchema = z.object({
     password : z.string().min(6,'passowrd must be 6 characters')
 })
 
-module.exports = {registerSchema};
+const loginSchema = z.object({
+    email : z.email(),
+    password : z.string().min(6)
+})
+
+
+module.exports = {registerSchema,loginSchema};

@@ -7,4 +7,9 @@ const { register, verifyEmail } = require("../controllers/authController");
 
 router.post("/register",validate(registerSchema),register);
 router.get("/verify/:token", verifyEmail);
+router.post(
+    "/login",
+    validate(loginSchema),
+    login
+);
 module.exports = router;

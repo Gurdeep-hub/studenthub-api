@@ -77,7 +77,64 @@ const verifyEmail = async (req,res,next)=>{
     }
 }
 
+const login = async (req,res,next)=>{
+    try {
+        const {email,password} = req.body;
+        const user = await User.findOne({email});
+          if (!user) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        if (!user.isVerified) {
+            return res.status(403).json({
+                message: "Please verify your email first"
+            });
+        }
+        const passwordMatch = bcrypt.compare(
+            password,
+            user.password
+        )
+        if(!passwordMatch){
+            return res.status(401).json({
+                message : "invalid email or password"
+            });
+        }
+        const accessToken = jwt.sign({
+            userId : user._id,
+            email : user.email
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {expiresIn : "15m"}
+    );
+        const refreshToken = jwt.sign({
+            userId : user._id,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {expiresIn : "1d"}
+    );
+    user.refreshToken = refreshToken;
+    await user.save();
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            message: "Login successful",
+            accessToken
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     register,
-    verifyEmail
+    verifyEmail,
+    login
 }
