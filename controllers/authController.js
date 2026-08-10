@@ -133,8 +133,54 @@ const login = async (req,res,next)=>{
     }
 }
 
+const refresh = async (req,res,next)=>{
+    try {
+        const cookies = req.cookies;
+
+    if (!cookies?.refreshToken) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        });
+    }
+    const refreshToken = cookies.refreshToken;
+    const foundUser = await User.findOne({refreshToken});
+    if(!foundUser){
+        return res.status(403).json({
+            message : "forbidden"
+        })
+    }
+    jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+        (err,decoded) =>{
+            if (err || foundUser.username !== decoded.username) {
+                return res.status(403).json({
+                    message: "Forbidden"
+                });
+            }
+            const accessToken = jwt.sign(
+                {
+                    userInfo : {
+                        username : decoded.username,
+                        
+                    }
+                },
+                process.env.ACCESS_TOKEN_SECRET,
+                {
+                    expiresIn: "15m"
+                }
+            );
+              res.json({ accessToken });
+                }
+            )
+        }
+     catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     register,
     verifyEmail,
     login
-}
+};
