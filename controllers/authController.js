@@ -77,11 +77,13 @@ const verifyEmail = async (req,res,next)=>{
     }
 }
 
-const login = async (req,res,next)=>{
+const login = async (req, res, next) => {
     try {
-        const {email,password} = req.body;
-        const user = await User.findOne({email});
-          if (!user) {
+        const { email, password } = req.body;
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
             return res.status(401).json({
                 message: "Invalid email or password"
             });
@@ -92,30 +94,43 @@ const login = async (req,res,next)=>{
                 message: "Please verify your email first"
             });
         }
+
         const passwordMatch = await bcrypt.compare(
             password,
             user.password
-        )
-        if(!passwordMatch){
+        );
+
+        if (!passwordMatch) {
             return res.status(401).json({
-                message : "invalid email or password"
+                message: "Invalid email or password"
             });
         }
-        const accessToken = jwt.sign({
-            userId : user._id,
-            email : user.email
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn : "15m"}
-    );
-        const refreshToken = jwt.sign({
-            userId : user._id,
-        },
-        process.env.REFRESH_TOKEN_SECRET,
-        {expiresIn : "7d"}
-    );
-    user.refreshToken = refreshToken;
-    await user.save();
+
+        const accessToken = jwt.sign(
+            {
+                userId: user._id,
+                email: user.email,
+                roles: user.roles
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: "15m"
+            }
+        );
+
+        const refreshToken = jwt.sign(
+            {
+                userId: user._id
+            },
+            process.env.REFRESH_TOKEN_SECRET,
+            {
+                expiresIn: "7d"
+            }
+        );
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -131,7 +146,7 @@ const login = async (req,res,next)=>{
     } catch (error) {
         next(error);
     }
-}
+};
 
 const refresh = async (req,res,next)=>{
     try {
