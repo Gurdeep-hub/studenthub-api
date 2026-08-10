@@ -182,5 +182,6 @@ const refresh = async (req,res,next)=>{
 module.exports = {
     register,
     verifyEmail,
-    login
+    login,
+    refresh
 };
