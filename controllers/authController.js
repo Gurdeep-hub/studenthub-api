@@ -143,7 +143,7 @@ const refresh = async (req,res,next)=>{
         });
     }
     const refreshToken = cookies.refreshToken;
-    const foundUser = await User.findOne({refreshToken});
+    const foundUser = await User.findOne({refreshToken}).exec();
     if(!foundUser){
         return res.status(403).json({
             message : "forbidden"
@@ -179,9 +179,44 @@ const refresh = async (req,res,next)=>{
     }
 }
 
+const handleLogout = async (req,res,next)=>{
+    try {
+           const cookies = req.cookies;
+
+    if (!cookies?.refreshToken) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        });
+    }
+    const refreshToken = cookies.refreshToken;
+    const foundUser = await User.findOne({refreshToken}).exec();
+    if(!foundUser){
+         res.clearCookie("refreshToken", {
+            httpOnly: true,
+            sameSite: "None",
+            secure: true
+        });
+
+        return res.sendStatus(204);
+    }
+    foundUser.refreshToken = "";
+    await foundUser.save();
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true
+    });
+
+    res.sendStatus(204);
+    } catch (error) {
+          next(error);
+    }
+}
+
 module.exports = {
     register,
     verifyEmail,
     login,
-    refresh
+    refresh,
+    handleLogout
 };

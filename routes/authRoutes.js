@@ -3,7 +3,7 @@ const router = express.Router();
 const validate = require('../middleware/validate');
 const {registerSchema} = require('../validator/authValidator');
 // const {register} = require('../controllers/authController');
-const { register, verifyEmail,login,refresh } = require("../controllers/authController");
+const { register, verifyEmail,login,refresh,handleLogout } = require("../controllers/authController");
 
 router.post("/register",validate(registerSchema),register);
 router.get("/verify/:token", verifyEmail);
@@ -13,4 +13,5 @@ router.post(
     login
 );
 router.get("/refresh", handleRefreshToken);
+router.get("/logout", handleLogout);
 module.exports = router;
