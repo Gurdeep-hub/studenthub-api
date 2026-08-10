@@ -92,7 +92,7 @@ const login = async (req,res,next)=>{
                 message: "Please verify your email first"
             });
         }
-        const passwordMatch = bcrypt.compare(
+        const passwordMatch = await bcrypt.compare(
             password,
             user.password
         )
@@ -112,7 +112,7 @@ const login = async (req,res,next)=>{
             userId : user._id,
         },
         process.env.REFRESH_TOKEN_SECRET,
-        {expiresIn : "1d"}
+        {expiresIn : "7d"}
     );
     user.refreshToken = refreshToken;
     await user.save();
