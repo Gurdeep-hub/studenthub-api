@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
-
+const noteRoutes  = require('./routes/notesRoutes');
 const app = express();
 const dns = require('dns');
 dns.setServers(['1.1.1.1','8.8.8.8']);
@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
     res.send("StudentHub API is running...");
 });
 app.use("/api/auth", authRoutes);
-
+app.use("/notes", noteRoutes);
 const startServer = async()=>{
     try {
         await connectDB();
